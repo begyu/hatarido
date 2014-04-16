@@ -560,7 +560,7 @@ int main(int ac, char **av)
   	 {
   	   do {
   	     printf("Napok (n1 [n2 [...n10]]): ");
-  	     gets(buf);
+  	     fgets(dbuf, sizeof(dbuf), stdin);
   	     s = buf;
   	     strtok(s, " ");
   	     napok[0] = atoi(s);
