@@ -1,4 +1,4 @@
-/* $Id: hatarido.c, v.1.6 by begyu 2014/04/09 $
+/* $Id: hatarido.c, v.1.7 by begyu 2014/11/24 $
  * Adott év (hónap[nap]) napjaihoz adott napok dátumai.
  * Munkanap áthelyezések a "hatarido_20??.cfg" fájlban "mm.dd-mm.dd" formában.
  * -m munkanappal kezd
@@ -7,13 +7,14 @@
  * na nem munkanapra is eshet (nA u.a. -1 nap)
  * nb csak munkanapot számol (nB u.a. -1 nap)
  * nC kezdő napot is számolja (-1 nap a vége)
+ * nd 'jogerő'
  * RTF és CSV kimenetet generál Word és Excel (vagy LibreOffice) számára.
  * kiemeles sargaval
  * TODO: UTF-8-ra ├ít k├ęne m├ęg ├şrni!
  * http://sf.net/projects/hati/
  */
 
-#define VERSION "1.6"
+#define VERSION "1.7"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,6 +79,7 @@ static int rdm[MAXNAP], rdd[MAXNAP];
 static int napok[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static int skips[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 static int kezdo[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+static int joger[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 
 #ifndef MSDOS
 char *itoa(int value, char *string, int radix)
@@ -296,6 +298,12 @@ int proc(int y, int m, int d)
     {
       while (is_munkanap(dat) == -1)
         	DT_add_days(dat, 1);
+    }
+    if (joger[i] == 1)
+    {
+      while (is_munkanap(dat) == -1)
+        	DT_add_days(dat, 1);
+      DT_add_days(dat, 1);
     }
     rdm[i] = DT_month(dat);
     rdd[i] = DT_day(dat);
@@ -608,6 +616,11 @@ int main(int ac, char **av)
   	   	   }
   	   	   else if ((c=='C'))
   	   	     	kezdo[i] = 1;
+  	   	   else if ((c=='d'))
+  	   	   {
+  	   	     	kezdo[i] = 1;
+  	   	     	joger[i] = 1;
+  	   	   }
   	   	   if (skips[i] > 0)
   	   	     	s[k] = 0;
   	   	 }
@@ -745,6 +758,7 @@ int main(int ac, char **av)
     puts("\t#b = csak munkanapot számol");
     puts("\t#B = u.a. de a kezdő napot is számolja");
     puts("\t#C = a kezdő napot is számolja");
+    puts("\t#d = 'jogerő'");
     return -1;
   }
   return 0;
