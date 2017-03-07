@@ -1,33 +1,38 @@
-/* $Id: hatarido.c, v.1.7 by begyu 2014/11/24 $
- * Adott év (hónap[nap]) napjaihoz adott napok dátumai.
- * Munkanap áthelyezések a "hatarido_20??.cfg" fájlban "mm.dd-mm.dd" formában.
+/* $Id: hatarido.c, v.1.8 by begyu 2017/03/07 $
+ * Adott ‚v (h˘nap[nap]) napjaihoz adott napok d tumai.
+ * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
  * -m munkanappal kezd
- * -i interaktív mód
- * -c részben interaktív
+ * -i interaktˇv m˘d
+ * -c r‚szben interaktˇv
  * na nem munkanapra is eshet (nA u.a. -1 nap)
- * nb csak munkanapot számol (nB u.a. -1 nap)
- * nC kezdő napot is számolja (-1 nap a vége)
- * nd 'jogerő'
- * RTF és CSV kimenetet generál Word és Excel (vagy LibreOffice) számára.
+ * nb csak munkanapot sz mol (nB u.a. -1 nap)
+ * nC kezd‹ napot is sz molja (-1 nap a v‚ge)
+ * nd 'joger‹'
+ * RTF ‚s CSV kimenetet gener l Word ‚s Excel (vagy LibreOffice) sz m ra.
  * kiemeles sargaval
- * TODO: UTF-8-ra ├ít k├ęne m├ęg ├şrni!
+ * TODO: UTF-8-ra Ăˇt kĂ©ne mĂ©g Ă­rni!
  * http://sf.net/projects/hati/
  */
 
-#define VERSION "1.7"
+#define VERSION "1.8"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <date.h>
+/*#include <date.h>*/
+#include "date.h"
+#include "date.c" /* Nofene */
 #include <time.h>
 #include <locale.h>
 #include <ctype.h>
-#ifndef MSDOS
+/*#ifndef MSDOS*/  
+#ifdef MSDOS
   #include <libgen.h>
 #endif
+#include "mygetopt.c"
+#define getopt my_getopt
 
 #define csvfn "hati.csv"
 #define rtffn "hati.rtf"
@@ -206,7 +211,7 @@ int is_unnep(int h, int n)
 
 int is_munkanap(DT_DATE *dat)
 {
-  DT_DATE *husv, *punk;
+  DT_DATE *husv, *punk, *nagyp;
   int i;
 
   hetvege = 0;
@@ -229,16 +234,22 @@ int is_munkanap(DT_DATE *dat)
 
   husv = DT_copy_date(dat);
   (void)DT_easter(husv);
-  DT_add_days(husv, 1);
+  DT_add_days(husv, 1);  //h‚tf“!
 
   if (dt_eq(dat, husv) == 0)
-    	hetvege = 1; //valójában húsvét!
+    	hetvege = 1; //val˘j ban hŁsv‚t!
        
   punk = DT_copy_date(husv);
   DT_add_days(punk, 49);
 
+  nagyp = DT_copy_date(husv);
+  DT_add_days(nagyp, -3);
+
   if (dt_eq(dat, punk) == 0)
-    	hetvege = 1; //valójában pünkösd!
+    	hetvege = 1; //val˘j ban pnk”sd!
+       
+  if (dt_eq(dat, nagyp) == 0)
+    	hetvege = 1; //nagyp‚ntek!
        
   if (hetvege == 1)
     	return (-1);
@@ -264,7 +275,7 @@ int proc(int y, int m, int d)
   if (m==2 && d==29)
     if (!DT_is_leap_year(dat))
     {
-      fprintf(stderr, "%d nem szökőév!\n", y);
+      fprintf(stderr, "%d nem sz”k‹‚v!\n", y);
       DT_rmdate(dat);
       return -1;
     }
@@ -328,13 +339,13 @@ int cal(int year, int month, FILE *f)
                           "Julius", "Augusztus", "Szeptember",
                           "Oktober", "November", "December" };
 
-  char *honapok[] = { "Január", "Február", "Március",
-                      "Április", "Május", "Június",
-                      "Július", "Augusztus", "Szeptember",
-                      "Október", "November", "December" };
+  char *honapok[] = { "Janu r", "Febru r", "M rcius",
+                      "µprilis", "M jus", "JŁnius",
+                      "JŁlius", "Augusztus", "Szeptember",
+                      "Okt˘ber", "November", "December" };
 
   char days[]  = "He Ke Sz Cs Pe Sz Va";
-  char napok[] = "Hé Ke Sz Cs Pé Sz Va\n";
+  char napok[] = "H‚ Ke Sz Cs P‚ Sz Va\n";
 
   d1 = DT_mkdate(year,month,1);
 
@@ -448,7 +459,7 @@ void datform(char *s)
 
 int main(int ac, char **av)
 {
-  int e,h; /* év,hó */
+  int e,h; /* ‚v,h˘ */
   int n=0; /* nap */
   int i,j,k,m,o,x,r;
   char *s=NULL;
@@ -517,7 +528,7 @@ int main(int ac, char **av)
   	 setlocale(LC_ALL, "C");
   	 if ((x == 88) || (x == 99))
   	 {
-  	   printf("Dátum (éééé[.hó[.nn]]): ");
+  	   printf("D tum (‚‚‚‚[.h˘[.nn]]): ");
   	   fgets(dbuf, sizeof(dbuf), stdin);
   	   s = dbuf;
   	   s[strlen(s)-1] = '\0';
@@ -549,21 +560,21 @@ int main(int ac, char **av)
   	 else
   	 if (e > 3000)
   	 {
-  	   fprintf(stderr, "\n\"%d\" érvénytelen dátum!\n", e);
+  	   fprintf(stderr, "\n\"%d\" ‚rv‚nytelen d tum!\n", e);
   	   return -1;
   	 }
   	 if ((m < 1) || (m > 12))
   	 {
-  	   fprintf(stderr, "\n\"%d\" érvénytelen hónap!\n", m);
+  	   fprintf(stderr, "\n\"%d\" ‚rv‚nytelen h˘nap!\n", m);
   	   return -1;
   	 }
   	 if ((n < 0) || (n > DT_days_this_month_q(e, m)))
   	 {
-  	   fprintf(stderr, "\n\"%d\" érvénytelen nap!\n", n);
+  	   fprintf(stderr, "\n\"%d\" ‚rv‚nytelen nap!\n", n);
   	   return -1;
   	 }
   	 if (e < get_year())
-  	   	printf("\n*** Az évszám (%d) kisebb, mint a folyó év! ***", e);
+  	   	printf("\n*** Az ‚vsz m (%d) kisebb, mint a foly˘ ‚v! ***", e);
   	 if (x == 99)
   	 {
   	   do {
@@ -614,9 +625,9 @@ int main(int ac, char **av)
   	   	     if (c=='B')
   	   	        	kezdo[i] = 1;
   	   	   }
-  	   	   else if ((c=='C'))
+  	   	   else if (c=='C')
   	   	     	kezdo[i] = 1;
-  	   	   else if ((c=='d'))
+  	   	   else if (c=='d')
   	   	   {
   	   	     	kezdo[i] = 1;
   	   	     	joger[i] = 1;
@@ -653,7 +664,7 @@ int main(int ac, char **av)
   	   	   cal(e, h, stdout);
   	   	   cal(e, h, fr);
   	   	 }
-  	   	 printf("\n%d.%02d hó\t\t+%d\t", e, h, napok[0]);
+  	   	 printf("\n%d.%02d h˘\t\t+%d\t", e, h, napok[0]);
   	   	 fprintf(fr, R_P);
   	   	 fprintf(fr, R_ROMAN);
   	   	 fprintf(fr, R_B);
@@ -696,12 +707,12 @@ int main(int ac, char **av)
   	   	 	   fprintf(fr, R_E);
   	   	 	 }
   	   	 	 else if (n > 0)
-  	   	 	   	printf("%d.%d.%d. hétvége vagy ünnep!\n", e,h,i);
+  	   	 	   	printf("%d.%d.%d. h‚tv‚ge vagy nnep!\n", e,h,i);
   	   	 }
   	   	 printf("\n");
   	   	 fprintf(fr, "\n");
   	   	 if (h<m)
-  	   	   	fprintf(fr, R_PG);
+  	   	 	  	fprintf(fr, R_PG);
   	   	 fprintf(fr, R_E);
   	   	 fprintf(fr, R_E);
   	   	 fprintf(fr, R_E);
@@ -742,23 +753,23 @@ int main(int ac, char **av)
   }
   else
   {
-    puts("Határidő számító");
-    puts("\t(munkanap áthelyezések a 'hatarido_20??.cfg' fájlban)");
-    s = (char *)basename(av[0]);
-/*#define s "hatarido"*/
-    printf("Használat:\t%s [-m] <éééé[.hh[.nn]] n1 [n2 [...n10]]>\n", s);
+    puts("Hat rid‹ sz mˇt˘");
+    puts("\t(munkanap  thelyez‚sek a 'hatarido_20??.cfg' f jlban)");
+/*    s = (char *)basename(av[0]);*/
+#define s "hatarido"
+    printf("Haszn lat:\t%s [-m] <‚‚‚‚[.hh[.nn]] n1 [n2 [...n10]]>\n", s);
     printf("\tvagy:\t%s [-m] -i\n", s);
-    printf("\tvagy:\t%s [-m] -c n1[a|A|b|B|C] [n2[a|A|b|B|C] ...]\n", s);
+    printf("\tvagy:\t%s [-m] -c n1[a|A|b|B|C|d] [n2[a|A|b|B|C|d] ...]\n", s);
     puts("ahol:");
     puts("\t-m = munkanappal kezd");
-    puts("\t-i = interaktív mód");
-    puts("\t-c = részben interaktív (csak dátumot kér)");
+    puts("\t-i = interaktˇv m˘d");
+    puts("\t-c = r‚szben interaktˇv (csak d tumot k‚r)");
     puts("\t#a = nem munkanapra is eshet");
-    puts("\t#A = u.a. de a kezdő napot is számolja");
-    puts("\t#b = csak munkanapot számol");
-    puts("\t#B = u.a. de a kezdő napot is számolja");
-    puts("\t#C = a kezdő napot is számolja");
-    puts("\t#d = 'jogerő'");
+    puts("\t#A = u.a. de a kezd‹ napot is sz molja");
+    puts("\t#b = csak munkanapot sz mol");
+    puts("\t#B = u.a. de a kezd‹ napot is sz molja");
+    puts("\t#C = a kezd‹ napot is sz molja");
+    puts("\t#d = 'joger‹'");
     return -1;
   }
   return 0;
