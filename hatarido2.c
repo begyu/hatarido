@@ -1,20 +1,20 @@
-/* $Id: hatarido.c, v.1.9 by begyu 2017/03/08 $
- * Adott ‚v (h¢nap[nap]) napjaihoz adott napok d tumai.
- * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
+/* $Id: hatarido.c, v.2.0 by begyu 2017/07/26 $
+ * Adott â€šv (hË˜nap[nap]) napjaihoz adott napok dÂ tumai.
+ * Munkanap Â thelyezâ€šsek a "hatarido_20??.cfg" fÂ jlban "mm.dd-mm.dd" formÂ ban.
  * -m munkanappal kezd
- * -i interakt¡v m¢d
- * -c r‚szben interakt¡v
+ * -i interaktË‡v mË˜d
+ * -c râ€šszben interaktË‡v
  * na nem munkanapra is eshet (nA u.a. -1 nap)
- * nb csak munkanapot sz mol (nB u.a. -1 nap)
- * nC kezd‹ napot is sz molja (-1 nap a v‚ge)
- * nd 'joger‹'
- * RTF ‚s CSV kimenetet gener l Word ‚s Excel (vagy LibreOffice) sz m ra.
+ * nb csak munkanapot szÂ mol (nB u.a. -1 nap)
+ * nC kezdâ€¹ napot is szÂ molja (-1 nap a vâ€šge)
+ * nd 'jogerâ€¹'
+ * RTF â€šs CSV kimenetet generÂ l Word â€šs Excel (vagy LibreOffice) szÂ mÂ ra.
  * kiemeles sargaval
- * TODO: UTF-8-ra Ã¡t kÃ©ne mÃ©g Ã­rni!
+ * TODO: UTF-8-ra Ä‚Ë‡t kÄ‚Â©ne mÄ‚Â©g Ä‚Â­rni!
  * http://sf.net/projects/hati/
  */
 
-#define VERSION "1.9"
+#define VERSION "2.0"
 //Wordpad-hoz hegesztve!
 
 #include <stdio.h>
@@ -240,10 +240,10 @@ int is_munkanap(DT_DATE *dat)
 
   husv = DT_copy_date(dat);
   (void)DT_easter(husv);
-  DT_add_days(husv, 1);  //h‚tf“!
+  DT_add_days(husv, 1);  //hâ€štfâ€œ!
 
   if (dt_eq(dat, husv) == 0)
-    	hetvege = 1; //val¢j ban h£sv‚t!
+    	hetvege = 1; //valË˜jÂ ban hÅsvâ€št!
        
   punk = DT_copy_date(husv);
   DT_add_days(punk, 49);
@@ -252,10 +252,10 @@ int is_munkanap(DT_DATE *dat)
   DT_add_days(nagyp, -3);
 
   if (dt_eq(dat, punk) == 0)
-    	hetvege = 1; //val¢j ban pnk”sd!
+    	hetvege = 1; //valË˜jÂ ban pÂnkâ€sd!
        
   if (dt_eq(dat, nagyp) == 0)
-    	hetvege = 1; //nagyp‚ntek!
+    	hetvege = 1; //nagypâ€šntek!
        
   if (hetvege == 1)
     	return (-1);
@@ -281,7 +281,7 @@ int proc(int y, int m, int d)
   if (m==2 && d==29)
     if (!DT_is_leap_year(dat))
     {
-      fprintf(stderr, "%d nem sz”k‹‚v!\n", y);
+      fprintf(stderr, "%d nem szâ€kâ€¹â€šv!\n", y);
       DT_rmdate(dat);
       return -1;
     }
@@ -318,9 +318,17 @@ int proc(int y, int m, int d)
     }
     if (joger[i] == 1)
     {
-      while (is_munkanap(dat) == -1)
+      if (is_munkanap(dat) == -1)
+      {
+        while (is_munkanap(dat) == -1)
+          	DT_add_days(dat, 1);
+        if (DT_dow(dat) != DT_MONDAY)
+          	DT_add_days(dat, 1);
+        while (is_munkanap(dat) == -1)
+          	DT_add_days(dat, 1);
+      }
+      if (DT_dow(dat) == DT_MONDAY)
         	DT_add_days(dat, 1);
-      DT_add_days(dat, 1);
     }
     rdm[i] = DT_month(dat);
     rdd[i] = DT_day(dat);
@@ -345,13 +353,13 @@ int cal(int year, int month, FILE *f)
                           "Julius", "Augusztus", "Szeptember",
                           "Oktober", "November", "December" };
 
-  char *honapok[] = { "Janu r", "Febru r", "M rcius",
-                      "µprilis", "M jus", "J£nius",
-                      "J£lius", "Augusztus", "Szeptember",
-                      "Okt¢ber", "November", "December" };
+  char *honapok[] = { "JanuÂ r", "FebruÂ r", "MÂ rcius",
+                      "Âµprilis", "MÂ jus", "JÅnius",
+                      "JÅlius", "Augusztus", "Szeptember",
+                      "OktË˜ber", "November", "December" };
 
   char days[]  = "He Ke Sz Cs Pe Sz Va";
-  char napok[] = "H‚ Ke Sz Cs P‚ Sz Va\n";
+  char napok[] = "Hâ€š Ke Sz Cs Pâ€š Sz Va\n";
 
   d1 = DT_mkdate(year,month,1);
 
@@ -465,12 +473,12 @@ void datform(char *s)
 
 void id()
 {
-  puts("Hat rid‹ sz m¡t¢ v."VERSION);
+  puts("HatÂ ridâ€¹ szÂ mË‡tË˜ v."VERSION);
 }
 
 int main(int ac, char **av)
 {
-  int e,h; /* ‚v,h¢ */
+  int e,h; /* â€šv,hË˜ */
   int n=0; /* nap */
   int i,j,k,m,o,x,r;
   char *s=NULL;
@@ -556,7 +564,7 @@ int main(int ac, char **av)
   	 setlocale(LC_ALL, "C");
   	 if ((x == 88) || (x == 99))
   	 {
-  	   printf("D tum (‚‚‚‚[.h¢[.nn]]): ");
+  	   printf("DÂ tum (â€šâ€šâ€šâ€š[.hË˜[.nn]]): ");
   	   fgets(dbuf, sizeof(dbuf), stdin);
   	   s = dbuf;
   	   s[strlen(s)-1] = '\0';
@@ -588,21 +596,21 @@ int main(int ac, char **av)
   	 else
   	 if (e > 3000)
   	 {
-  	   fprintf(stderr, "\n\"%d\" ‚rv‚nytelen d tum!\n", e);
+  	   fprintf(stderr, "\n\"%d\" â€šrvâ€šnytelen dÂ tum!\n", e);
   	   return -1;
   	 }
   	 if ((m < 1) || (m > 12))
   	 {
-  	   fprintf(stderr, "\n\"%d\" ‚rv‚nytelen h¢nap!\n", m);
+  	   fprintf(stderr, "\n\"%d\" â€šrvâ€šnytelen hË˜nap!\n", m);
   	   return -1;
   	 }
   	 if ((n < 0) || (n > DT_days_this_month_q(e, m)))
   	 {
-  	   fprintf(stderr, "\n\"%d\" ‚rv‚nytelen nap!\n", n);
+  	   fprintf(stderr, "\n\"%d\" â€šrvâ€šnytelen nap!\n", n);
   	   return -1;
   	 }
   	 if (e < get_year())
-  	   	printf("\n*** Az ‚vsz m (%d) kisebb, mint a foly¢ ‚v! ***", e);
+  	   	printf("\n*** Az â€švszÂ m (%d) kisebb, mint a folyË˜ â€šv! ***", e);
   	 if (x == 99)
   	 {
   	   do {
@@ -656,10 +664,7 @@ int main(int ac, char **av)
   	   	   else if (c=='C')
   	   	     	kezdo[i] = 1;
   	   	   else if (c=='d')
-  	   	   {
-  	   	     	kezdo[i] = 1;
   	   	     	joger[i] = 1;
-  	   	   }
   	   	   if (skips[i] > 0)
   	   	     	s[k] = 0;
   	   	 }
@@ -693,7 +698,7 @@ int main(int ac, char **av)
   	   	   cal(e, h, stdout);
   	   	   cal(e, h, fr);
   	   	 }
-  	   	 printf("\n%d.%02d h¢\t\t+%d\t", e, h, napok[0]);
+  	   	 printf("\n%d.%02d hË˜\t\t+%d\t", e, h, napok[0]);
   	   	 fprintf(fr, R_P);
   	   	 fprintf(fr, R_ROMAN);
   	   	 fprintf(fr, R_B);
@@ -736,7 +741,7 @@ int main(int ac, char **av)
   	   	 	   fprintf(fr, R_E);
   	   	 	 }
   	   	 	 else if (n > 0)
-  	   	 	   	printf("%d.%d.%d. h‚tv‚ge vagy nnep!\n", e,h,i);
+  	   	 	   	printf("%d.%d.%d. hâ€štvâ€šge vagy Ânnep!\n", e,h,i);
   	   	 }
   	   	 printf("\n");
   	   	 fprintf(fr, "\n");
@@ -785,23 +790,23 @@ int main(int ac, char **av)
   }
   else
   {
-/*    puts("Hat rid‹ sz m¡t¢ v."VERSION);*/
+/*    puts("HatÂ ridâ€¹ szÂ mË‡tË˜ v."VERSION);*/
     id();
-    puts("\t(munkanap  thelyez‚sek a 'hatarido_20??.cfg' f jlban)");
+    puts("\t(munkanap Â thelyezâ€šsek a 'hatarido_20??.cfg' fÂ jlban)");
 #define ps "hatarido"
-    printf("Haszn lat:\t%s [-m] <‚‚‚‚[.hh[.nn]] n1 [n2 [...n10]]>\n", ps);
+    printf("HasznÂ lat:\t%s [-m] <â€šâ€šâ€šâ€š[.hh[.nn]] n1 [n2 [...n10]]>\n", ps);
     printf("\tvagy:\t%s [-m] -i\n", s);
     printf("\tvagy:\t%s [-m] -c n1[a|A|b|B|C|d] [n2[a|A|b|B|C|d] ...]\n", s);
     puts("ahol:");
     puts("\t-m = munkanappal kezd");
-    puts("\t-i = interakt¡v m¢d");
-    puts("\t-c = r‚szben interakt¡v (csak d tumot k‚r)");
+    puts("\t-i = interaktË‡v mË˜d");
+    puts("\t-c = râ€šszben interaktË‡v (csak dÂ tumot kâ€šr)");
     puts("\t#a = nem munkanapra is eshet");
-    puts("\t#A = u.a. de a kezd‹ napot is sz molja");
-    puts("\t#b = csak munkanapot sz mol");
-    puts("\t#B = u.a. de a kezd‹ napot is sz molja");
-    puts("\t#C = a kezd‹ napot is sz molja");
-    puts("\t#d = 'joger‹'");
+    puts("\t#A = u.a. de a kezdâ€¹ napot is szÂ molja");
+    puts("\t#b = csak munkanapot szÂ mol");
+    puts("\t#B = u.a. de a kezdâ€¹ napot is szÂ molja");
+    puts("\t#C = a kezdâ€¹ napot is szÂ molja");
+    puts("\t#d = 'jogerâ€¹'");
     return -1;
   }
   execl(PRG, " ", rtffn, NULL);
