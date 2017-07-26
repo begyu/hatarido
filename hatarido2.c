@@ -322,12 +322,11 @@ int proc(int y, int m, int d)
       {
         while (is_munkanap(dat) == -1)
           	DT_add_days(dat, 1);
-        if (DT_dow(dat) != DT_MONDAY)
-          	DT_add_days(dat, 1);
-        while (is_munkanap(dat) == -1)
-          	DT_add_days(dat, 1);
+        DT_add_days(dat, 1);
       }
-      if (DT_dow(dat) == DT_MONDAY)
+      else
+        	DT_add_days(dat, 1);
+      while (is_munkanap(dat) == -1)
         	DT_add_days(dat, 1);
     }
     rdm[i] = DT_month(dat);
@@ -664,7 +663,10 @@ int main(int ac, char **av)
   	   	   else if (c=='C')
   	   	     	kezdo[i] = 1;
   	   	   else if (c=='d')
+  	   	   {
+  	   	     	kezdo[i] = 1;
   	   	     	joger[i] = 1;
+  	   	   }
   	   	   if (skips[i] > 0)
   	   	     	s[k] = 0;
   	   	 }
