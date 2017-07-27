@@ -1,4 +1,4 @@
-/* $Id: hatarido.c, v.2.0 by begyu 2017/07/26 $
+/* $Id: hatarido.c, v.2.0 by begyu 2017/07/27 $
  * Adott ‚v (h˘nap[nap]) napjaihoz adott napok d tumai.
  * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
  * -m munkanappal kezd
@@ -472,7 +472,7 @@ void datform(char *s)
 
 void id()
 {
-  puts("Hat rid‹ sz mˇt˘ v."VERSION);
+  puts("Hat rid‹ sz mˇt˘ v."VERSION" ("__DATE__")");
 }
 
 int main(int ac, char **av)
@@ -792,13 +792,12 @@ int main(int ac, char **av)
   }
   else
   {
-/*    puts("Hat rid‹ sz mˇt˘ v."VERSION);*/
     id();
     puts("\t(munkanap  thelyez‚sek a 'hatarido_20??.cfg' f jlban)");
 #define ps "hatarido"
     printf("Haszn lat:\t%s [-m] <‚‚‚‚[.hh[.nn]] n1 [n2 [...n10]]>\n", ps);
-    printf("\tvagy:\t%s [-m] -i\n", s);
-    printf("\tvagy:\t%s [-m] -c n1[a|A|b|B|C|d] [n2[a|A|b|B|C|d] ...]\n", s);
+    printf("\tvagy:\t%s [-m] -i\n", ps);
+    printf("\tvagy:\t%s [-m] -c n1[a|A|b|B|C|d] [n2[a|A|b|B|C|d] ...]\n", ps);
     puts("ahol:");
     puts("\t-m = munkanappal kezd");
     puts("\t-i = interaktˇv m˘d");
