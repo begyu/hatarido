@@ -1,4 +1,4 @@
-/* $Id: hatarido.c, v.2.0 by begyu 2017/07/27 $
+/* $Id: hatarido.c, v.2.0 by begyu 2017/07/28 $
  * Adott ‚v (h˘nap[nap]) napjaihoz adott napok d tumai.
  * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
  * -m munkanappal kezd
@@ -11,7 +11,9 @@
  * RTF ‚s CSV kimenetet gener l Word ‚s Excel (vagy LibreOffice) sz m ra.
  * kiemeles sargaval
  * TODO: UTF-8-ra Ăˇt kĂ©ne mĂ©g Ă­rni!
- * http://sf.net/projects/hati/
+ * http://sf.net/p/hati/
+ * https://sourceforge.net/projects/libdate/
+ * https://github.com/begyu/hatarido/
  */
 
 #define VERSION "2.0"
@@ -28,14 +30,12 @@
 #include <time.h>
 #include <locale.h>
 #include <ctype.h>
-/*#ifndef MSDOS*/  
 #ifdef MSDOS
   #include <libgen.h>
 #endif
 #include <process.h>
-#include "mygetopt.c"
+#include <getopt.h>
 
-#define getopt my_getopt
 
 /*#define csvfn "hati.csv"*/
 #define rtffn "hati.rtf"
@@ -91,46 +91,6 @@ static int napok[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static int skips[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 static int kezdo[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 static int joger[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
-
-#ifndef MSDOS
-char *itoa(int value, char *string, int radix)
-{
-  char tmp[33];
-  char *tp = tmp;
-  int i;
-  unsigned v;
-  int sign;
-  char *sp;
-  if (radix > 36 || radix <= 1)
-  {
-    errno = EDOM;
-    return 0;
-  }
-  sign = (radix == 10 && value < 0);
-  if (sign)
-    v = -value;
-  else
-    v = (unsigned)value;
-  while (v || tp == tmp)
-  {
-    i = v % radix;
-    v = v / radix;
-    if (i < 10)
-      *tp++ = i+'0';
-    else
-      *tp++ = i + 'a' - 10;
-  }
-  if (string == 0)
-    string = (char *)malloc((tp-tmp)+sign+1);
-  sp = string;
-  if (sign)
-    *sp++ = '-';
-  while (tp > tmp)
-    *sp++ = *--tp;
-  *sp = 0;
-  return string;
-}
-#endif
 
 typedef struct {
 	int ho_innen;
