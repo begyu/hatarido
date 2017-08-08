@@ -1,4 +1,4 @@
-/* $Id: hatarido.c, v.2.0 by begyu 2017/07/28 $
+/* $Id: hatarido.c, v.2.0 by begyu 2017/08/08 $
  * Adott ‚v (h˘nap[nap]) napjaihoz adott napok d tumai.
  * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
  * -m munkanappal kezd
@@ -30,9 +30,6 @@
 #include <time.h>
 #include <locale.h>
 #include <ctype.h>
-#ifdef MSDOS
-  #include <libgen.h>
-#endif
 #include <process.h>
 #include <getopt.h>
 
@@ -442,7 +439,10 @@ int main(int ac, char **av)
   int i,j,k,m,o,x,r;
   char *s=NULL;
   char *p;
-  FILE *fc, *fr;
+#if 0
+  FILE *fc;
+#endif
+  FILE *fr;
   int first = TRUE;
   int odd = 0;
   char sfn[256];
