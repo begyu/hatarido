@@ -1,4 +1,4 @@
-/* $Id: hatarido.c, v.2.0 by begyu 2017/08/08 $
+/* $Id: hatarido.c, v.2.0 by begyu 2017/08/09 $
  * Adott ‚v (h˘nap[nap]) napjaihoz adott napok d tumai.
  * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
  * -m munkanappal kezd
@@ -8,6 +8,7 @@
  * nb csak munkanapot sz mol (nB u.a. -1 nap)
  * nC kezd‹ napot is sz molja (-1 nap a v‚ge)
  * nd 'joger‹'
+ * -t csak termin lban fut, nem hˇvja meg a Wordpad-ot
  * RTF ‚s CSV kimenetet gener l Word ‚s Excel (vagy LibreOffice) sz m ra.
  * kiemeles sargaval
  * TODO: UTF-8-ra Ăˇt kĂ©ne mĂ©g Ă­rni!
@@ -17,7 +18,6 @@
  */
 
 #define VERSION "2.0"
-//Wordpad-hoz hegesztve!
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +37,9 @@
 /*#define csvfn "hati.csv"*/
 #define rtffn "hati.rtf"
 
-#define PRG "c:\\windows\\system32\\write.exe"
+#ifdef WIN32
+  #define PRG "c:\\windows\\system32\\write.exe"
+#endif
 
 #define R_CTAB "{\\rtf\\ansi\\deff0{\\fonttbl{\\f0\\fnil Courier New;}" \
                "{\\f1\\froman Times New Roman;}{\\f2\\fdecor Century;}}" \
@@ -84,10 +86,10 @@ static int hetvege;
 
 #define MAXNAP 10
 static int rdm[MAXNAP], rdd[MAXNAP];
-static int napok[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static int skips[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
-static int kezdo[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
-static int joger[MAXNAP+1] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+static int napok[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static int skips[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+static int kezdo[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+static int joger[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 
 typedef struct {
 	int ho_innen;
@@ -429,7 +431,7 @@ void datform(char *s)
 
 void id()
 {
-  puts("Hat rid‹ sz mˇt˘ v."VERSION" ("__DATE__")");
+  puts("Hat rid‹ sz mˇt˘ v."VERSION);
 }
 
 int main(int ac, char **av)
@@ -450,7 +452,9 @@ int main(int ac, char **av)
   char buf[128];
   char c;
   int ax = 0;
-  int mx = 0;
+#ifdef WIN32
+  int tt = 0;
+#endif
 
   x = (ac > (MAXNAP+3)) ? (MAXNAP+3) : ac;
 
@@ -469,16 +473,13 @@ int main(int ac, char **av)
   strcat(sfn, "hatarido_20??.cfg .");
 
   opterr = 0;
-  while ((c=getopt(ac, av, "CcIiMmVvHh?")) != -1)
+  while ((c=getopt(ac, av, "CcIiMmTtVvHh?")) != -1)
   {
     switch (c)
     {
       case 'm':
       case 'M':
         munkanappal_kezd = TRUE;
-        if (strlen(av[optind]) == 2)
-          	mx++;
-        ax++;
         break;
       case 'c':
       case 'C':
@@ -492,9 +493,15 @@ int main(int ac, char **av)
       case 'H':
         x = 0;
         break;
+#ifdef WIN32
+      case 't':
+      case 'T':
+        tt = 1;
+        break;
+#endif
       case 'v':
       case 'V':
-        printf("\nHatarido v.%s by begyu\n", VERSION);
+        printf("\nHatarido v.%s by begyu (%s)\n", VERSION, __DATE__);
         exit(0);
         break;
       case '-':
@@ -513,6 +520,8 @@ int main(int ac, char **av)
         break;
     }
   }
+  ax = optind;
+
   if (optind < ac)
       strcpy(buf, av[optind++]);
 
@@ -530,7 +539,7 @@ int main(int ac, char **av)
   	 }
   	 else
   	 {
-  	   strcpy(dbuf, av[1+ax]);
+  	   strcpy(dbuf, av[ax]);
   	   s = dbuf;
   	 }
   	 datform(s);
@@ -592,15 +601,14 @@ int main(int ac, char **av)
   	 else
   	 {
   	   if (x == 88)
-  	     	x = ac - (2+mx);
+  	     	x = ac - ax;
   	   else
   	   {
   	     	x = (x>(MAXNAP+2)) ? MAXNAP : (x-2);
-  	     	mx = ax;
   	   }
-  	   for (i=0; i<x; i++)
+  	   for (i=0; i<(x-1); i++)
   	   {
-  	   	 s = av[i+2+mx];
+  	   	 s = av[i+1+ax];
   	   	 if (s != NULL)
   	   	   k = strlen(s) - 1;
   	   	 else
@@ -768,9 +776,17 @@ int main(int ac, char **av)
     puts("\t#B = u.a. de a kezd‹ napot is sz molja");
     puts("\t#C = a kezd‹ napot is sz molja");
     puts("\t#d = 'joger‹'");
+#ifdef WIN32
+    puts("\t-t = csak termin l");
+#endif
+    puts("\t-h = ezen 'help'");
+    puts("\t-v = verzi˘");
     return -1;
   }
-  execl(PRG, " ", rtffn, NULL);
+#ifdef WIN32
+  if (tt == 0)
+    	execl(PRG, " ", rtffn, NULL);
+#endif
   return 0;
 }
 
