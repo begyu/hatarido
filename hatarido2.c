@@ -1,4 +1,4 @@
-/* $Id: hatarido.c, v.2.0 by begyu 2017/08/09 $
+/* $Id: hatarido.c, v.2.1 by begyu 2017/08/14 $
  * Adott ‚v (h˘nap[nap]) napjaihoz adott napok d tumai.
  * Munkanap  thelyez‚sek a "hatarido_20??.cfg" f jlban "mm.dd-mm.dd" form ban.
  * -m munkanappal kezd
@@ -17,7 +17,7 @@
  * https://github.com/begyu/hatarido/
  */
 
-#define VERSION "2.0"
+#define VERSION "2.1"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +30,9 @@
 #include <time.h>
 #include <locale.h>
 #include <ctype.h>
-#include <process.h>
+#ifdef WIN32
+  #include <process.h>
+#endif
 #include <getopt.h>
 
 
@@ -90,6 +92,46 @@ static int napok[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static int skips[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 static int kezdo[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
 static int joger[MAXNAP] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; 
+
+#ifndef WIN32
+char *itoa(int value, char *string, int radix)
+{
+  char tmp[33];
+  char *tp = tmp;
+  int i;
+  unsigned v;
+  int sign;
+  char *sp;
+  if (radix > 36 || radix <= 1)
+  {
+    errno = EDOM;
+    return 0;
+  }
+  sign = (radix == 10 && value < 0);
+  if (sign)
+    v = -value;
+  else
+    v = (unsigned)value;
+  while (v || tp == tmp)
+  {
+    i = v % radix;
+    v = v / radix;
+    if (i < 10)
+      *tp++ = i+'0';
+    else
+      *tp++ = i + 'a' - 10;
+  }
+  if (string == 0)
+    string = (char *)malloc((tp-tmp)+sign+1);
+  sp = string;
+  if (sign)
+    *sp++ = '-';
+  while (tp > tmp)
+    *sp++ = *--tp;
+  *sp = 0;
+  return string;
+}
+#endif
 
 typedef struct {
 	int ho_innen;
@@ -447,7 +489,7 @@ int main(int ac, char **av)
   FILE *fr;
   int first = TRUE;
   int odd = 0;
-  char sfn[256];
+  char sfn[133];
   char dbuf[12];
   char buf[128];
   char c;
@@ -459,7 +501,7 @@ int main(int ac, char **av)
   x = (ac > (MAXNAP+3)) ? (MAXNAP+3) : ac;
 
   strcpy(sfn, "copy ");
-  strcat(sfn, av[0]);
+  strncat(sfn, av[0], 128);
   for (i=strlen(sfn); i; i--)
   {
     if (sfn[i] == '\\')
@@ -604,9 +646,9 @@ int main(int ac, char **av)
   	     	x = ac - ax;
   	   else
   	   {
-  	     	x = (x>(MAXNAP+2)) ? MAXNAP : (x-2);
+  	     	x = (x>(MAXNAP+1)) ? MAXNAP : (x-2);
   	   }
-  	   for (i=0; i<(x-1); i++)
+  	   for (i=0; i<x; i++)
   	   {
   	   	 s = av[i+1+ax];
   	   	 if (s != NULL)
@@ -639,7 +681,10 @@ int main(int ac, char **av)
   	   	     	s[k] = 0;
   	   	 }
   	   	 if (s == NULL)
+  	   	 {
   	   	   napok[i] = 0;
+  	   	   i = x;
+  	   	 }
   	   	 else
   	   	   napok[i] = atoi(s);
   	   }
@@ -763,9 +808,14 @@ int main(int ac, char **av)
     id();
     puts("\t(munkanap  thelyez‚sek a 'hatarido_20??.cfg' f jlban)");
 #define ps "hatarido"
-    printf("Haszn lat:\t%s [-m] <‚‚‚‚[.hh[.nn]] n1 [n2 [...n10]]>\n", ps);
-    printf("\tvagy:\t%s [-m] -i\n", ps);
-    printf("\tvagy:\t%s [-m] -c n1[a|A|b|B|C|d] [n2[a|A|b|B|C|d] ...]\n", ps);
+#ifdef WIN32
+  #define ts " [-t]"
+#else
+  #define ts ""
+#endif
+    printf("Haszn lat:\t%s [-m]%s <‚‚‚‚[.hh[.nn]] n1 [n2 [...n10]]>\n", ps, ts);
+    printf("\tvagy:\t%s [-m]%s -i\n", ps, ts);
+    printf("\tvagy:\t%s [-m]%s -c n1[a|A|b|B|C|d] [n2[a|A|b|B|C|d] ...]\n",ps,ts);
     puts("ahol:");
     puts("\t-m = munkanappal kezd");
     puts("\t-i = interaktˇv m˘d");
