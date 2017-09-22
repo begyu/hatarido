@@ -1,9 +1,10 @@
-/* $Id: kesedelmipotlek.c, v.0.1 by begyu 2017/09/21 $
+/* $Id: kesedelmipotlek.c, v.0.1 by begyu 2017/09/22 $
  * Kesedelmi potlek szamitas.
+ * Csak fix alapkamat eseten mukodik helyesen!
  * Datumok a XXI. szazadra korlatozva.
  */
 
-#define VER "2017.09.21"
+#define VER "2017.09.22"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -189,10 +190,10 @@ int main()
   DT_DATE *d_vege = NULL;
   unsigned int ev, ho, nap;
   long int napok;
-  float kamat;
-  float napipotlek;
-  int tartozas;
+  double kamat;
+  double napipotlek;
   int osszeg;
+  int potlek;
   char *p;
   int i, j;
   FILE *f;
@@ -203,7 +204,7 @@ int main()
 
   SetConsoleTitle(NEV);
 
-  gethomepath(txt);
+  (void)gethomepath(txt);
   strcat(txt, "\\"PAR);
   f = fopen(txt, "wt");
 
@@ -288,12 +289,13 @@ int main()
   napipotlek /= 1000;
   
 
-  printf(TABS"(%02.2f %%)\n", kamat);
-  fprintf(f, "\t* alapkamat: \t%02.2f %%\n", kamat);
+  printf(TABS"(%.2f %%)\n", kamat);
+  printf(TABS"(napi pótlék: %.3f)\n", napipotlek);
+  fprintf(f, "\t* alapkamat: \t%.2f %%\n", kamat);
   fprintf(f, "\t* napi pˇtlÚk: \t%.3f\n", napipotlek);
 
   do {
-      printf("Tartozás (Ft.): ");
+      printf("Összeg (Ft.): ");
       fgets(sbuf, sizeof(sbuf), stdin);
       i = strlen(sbuf)-1;
       sbuf[i] = '\0';
@@ -302,16 +304,16 @@ int main()
           if (sbuf[j] == ',')
               sbuf[j] = '.';
       }
-      tartozas = atoi(sbuf);
-  } while (tartozas == 0);
+      osszeg = atoi(sbuf);
+  } while (osszeg == 0);
 
-  printf(TABS"(%d,- Ft.)\n", tartozas);
-  fprintf(f, "\t* tartozßs: \t%d,- Ft.\n", tartozas);
+  printf(TABS"(%d,- Ft.)\n", osszeg);
+  fprintf(f, "\t* Ísszeg: \t%d,- Ft.\n", osszeg);
 
-  osszeg = (int)floor((napok * tartozas * napipotlek) / 100);
+  potlek = (int)floor((napok * napipotlek * osszeg) / 100);
 
-  printf("\nPótlék: %d,- Ft.\n", osszeg);
-  fprintf(f, "\nPˇtlÚk: %d,- Ft.\n", osszeg);
+  printf("\nPótlék: %d,- Ft.\n", potlek);
+  fprintf(f, "\nPˇtlÚk: %d,- Ft.\n", potlek);
   pause(1);
   printf("        ==========\n");
   fprintf(f, "        ==========\n");
